@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agentic-ops-config
+  namespace: agentic-ops
+  labels:
+    app.kubernetes.io/name: agentic-ops
+data:
+  K8S_MODE: "real"
+  POLL_INTERVAL_SECONDS: "30"
+  LANGSMITH_TRACING: "true"
+  LANGSMITH_PROJECT: "agentic-ops"
+  LANGSMITH_ENDPOINT: "https://api.smith.langchain.com"
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  # Set DATABASE_URL here if not using the in-cluster postgres below
+  DATABASE_URL: "postgresql+asyncpg://agentic:agentic@postgres-svc.agentic-ops.svc.cluster.local:5432/agentic_ops"

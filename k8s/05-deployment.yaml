@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentic-ops
+  namespace: agentic-ops
+  labels:
+    app.kubernetes.io/name: agentic-ops
+  annotations:
+    # Updated by Jenkins on each deploy
+    deployment.kubernetes.io/revision: "1"
+spec:
+  replicas: 1   # Single replica — only one watcher needed
+  selector:
+    matchLabels:
+      app: agentic-ops
+  strategy:
+    type: Recreate   # Stop old pod before starting new (avoids duplicate alerts)
+  template:
+    metadata:
+      labels:
+        app: agentic-ops
+        app.kubernetes.io/name: agentic-ops
+    spec:
+      serviceAccountName: agentic-ops
+
+      # Wait for postgres to be ready before starting the agent
+      initContainers:
+        - name: wait-for-postgres
+          image: busybox:1.36
+          command:
+            - sh
+            - -c
+            - |
+              until nc -z postgres-svc.agentic-ops.svc.cluster.local 5432; do
+                echo "Waiting for postgres..."; sleep 3
+              done
+              echo "Postgres is ready."
+
+      containers:
+        - name: agentic-ops
+          # Image tag is replaced by Jenkins: YOUR_REGISTRY/agentic-ops:GIT_SHA
+          image: YOUR_DOCKERHUB_USERNAME/agentic-ops:latest
+          imagePullPolicy: Always
+
+          # Load non-secret config from ConfigMap
+          envFrom:
+            - configMapRef:
+                name: agentic-ops-config
+
+          # Load secrets individually
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agentic-ops-secrets
+                  key: OPENAI_API_KEY
+            - name: LANGSMITH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: agentic-ops-secrets
+                  key: LANGSMITH_API_KEY
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: agentic-ops-secrets
+                  key: SLACK_WEBHOOK_URL
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: agentic-ops-secrets
+                  key: SMTP_USER
+            - name: SMTP_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: agentic-ops-secrets
+                  key: SMTP_PASSWORD
+            - name: NOTIFY_EMAIL_TO
+              valueFrom:
+                secretKeyRef:
+                  name: agentic-ops-secrets
+                  key: NOTIFY_EMAIL_TO
+
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+
+          livenessProbe:
+            exec:
+              command:
+                - python
+                - -c
+                - |
+                  import os, time
+                  s = os.stat('/tmp/heartbeat')
+                  assert time.time() - s.st_mtime < 120, 'heartbeat stale'
+            initialDelaySeconds: 60
+            periodSeconds: 60
+            failureThreshold: 3
+
+      restartPolicy: Always
