@@ -6,8 +6,8 @@ WORKDIR /app
 # Install uv for fast dependency resolution
 RUN pip install --no-cache-dir uv==0.9.8
 
-# Copy only the dependency manifest first (cache layer)
-COPY pyproject.toml .
+# Copy manifest and README (hatchling requires both to build the package)
+COPY pyproject.toml README.md ./
 
 # Install all project dependencies into the system Python
 RUN uv pip install --system --no-cache .
