@@ -1,13 +1,13 @@
 # One-shot Job that seeds the knowledge base.
 # Run once after the first deploy:
 #   kubectl apply -f k8s/06-seed-job.yaml
-#   kubectl wait --for=condition=complete job/kb-seed -n agentic-ops --timeout=300s
+#   kubectl wait --for=condition=complete job/kb-seed -n dev --timeout=300s
 #   kubectl delete -f k8s/06-seed-job.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: kb-seed
-  namespace: agentic-ops
+  namespace: dev
   labels:
     app.kubernetes.io/name: agentic-ops
     app.kubernetes.io/component: seed
@@ -23,12 +23,12 @@ spec:
             - sh
             - -c
             - |
-              until nc -z postgres-svc.agentic-ops.svc.cluster.local 5432; do
+              until nc -z postgres-svc.dev.svc.cluster.local 5432; do
                 echo "Waiting for postgres..."; sleep 3
               done
       containers:
         - name: seed
-          image: YOUR_DOCKERHUB_USERNAME/agentic-ops:latest
+          image: mohitsni/agentic-ops:latest
           command: ["python", "-m", "src.agentic_ops.db.seed_data"]
           envFrom:
             - configMapRef:

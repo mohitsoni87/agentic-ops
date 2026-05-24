@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: agentic-ops
-  namespace: agentic-ops
+  namespace: dev
   labels:
     app.kubernetes.io/name: agentic-ops
   annotations:
@@ -31,7 +31,7 @@ spec:
             - sh
             - -c
             - |
-              until nc -z postgres-svc.agentic-ops.svc.cluster.local 5432; do
+              until nc -z postgres-svc.dev.svc.cluster.local 5432; do
                 echo "Waiting for postgres..."; sleep 3
               done
               echo "Postgres is ready."
@@ -39,7 +39,7 @@ spec:
       containers:
         - name: agentic-ops
           # Image tag is replaced by Jenkins: YOUR_REGISTRY/agentic-ops:GIT_SHA
-          image: YOUR_DOCKERHUB_USERNAME/agentic-ops:latest
+          image: mohitsni/agentic-ops:latest
           imagePullPolicy: Always
 
           # Load non-secret config from ConfigMap

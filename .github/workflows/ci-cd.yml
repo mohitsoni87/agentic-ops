@@ -8,7 +8,7 @@ on:
 
 env:
   IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/agentic-ops
-  K8S_NAMESPACE: agentic-ops
+  K8S_NAMESPACE: dev
 
 jobs:
   # ── Job 1: Test ────────────────────────────────────────────────────────────
@@ -111,7 +111,7 @@ jobs:
             -n $K8S_NAMESPACE --timeout=120s
 
           # Swap image placeholder and apply agent deployment
-          sed "s|YOUR_DOCKERHUB_USERNAME/agentic-ops:latest|${{ env.IMAGE_NAME }}:${IMAGE_TAG}|g" \
+          sed "s|mohitsni/agentic-ops:latest|${{ env.IMAGE_NAME }}:${IMAGE_TAG}|g" \
             k8s/05-deployment.yaml | kubectl apply -f -
 
           # Wait for rollout
@@ -145,7 +145,7 @@ jobs:
         env:
           IMAGE_TAG: ${{ github.event.inputs.image_tag || 'latest' }}
         run: |
-          sed "s|YOUR_DOCKERHUB_USERNAME/agentic-ops:latest|${{ env.IMAGE_NAME }}:${IMAGE_TAG}|g" \
+          sed "s|mohitsni/agentic-ops:latest|${{ env.IMAGE_NAME }}:${IMAGE_TAG}|g" \
             k8s/06-seed-job.yaml | kubectl apply -f -
 
           kubectl wait --for=condition=complete job/kb-seed \

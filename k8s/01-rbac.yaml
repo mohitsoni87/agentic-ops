@@ -4,7 +4,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: agentic-ops
-  namespace: agentic-ops
+  namespace: dev
   labels:
     app.kubernetes.io/name: agentic-ops
 
@@ -38,7 +38,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: agentic-ops
-    namespace: agentic-ops
+    namespace: dev
 roleRef:
   kind: ClusterRole
   name: agentic-ops-watcher
