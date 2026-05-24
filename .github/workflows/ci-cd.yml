@@ -90,6 +90,9 @@ jobs:
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
 
+      - name: Install gke-gcloud-auth-plugin
+        run: sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
+
       - name: Write kubeconfig
         run: |
           mkdir -p ~/.kube
@@ -134,6 +137,9 @@ jobs:
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v3
+
+      - name: Install gke-gcloud-auth-plugin
+        run: sudo apt-get install -y google-cloud-sdk-gke-gcloud-auth-plugin
 
       - name: Write kubeconfig
         run: |
